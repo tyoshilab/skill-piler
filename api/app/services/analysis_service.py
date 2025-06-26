@@ -84,7 +84,9 @@ class AnalysisService:
             language_stats = defaultdict(lambda: {
                 'total_bytes': 0,
                 'repository_count': 0,
-                'commit_count': 0
+                'commit_count': 0,
+                'recent_activity': 0,
+                'total_commits': 0
             })
             
             total_commits = 0
@@ -105,11 +107,16 @@ class AnalysisService:
                         request.access_token
                     )
                     
-                    # Process languages
+                    # Process languages with time-weighted commits
                     for language, bytes_count in languages.items():
                         language_stats[language]['total_bytes'] += bytes_count
                         language_stats[language]['repository_count'] += 1
-                        language_stats[language]['commit_count'] += len(commits)
+                        
+                        # Filter commits for time-weighted analysis
+                        recent_commits = self._filter_recent_commits(commits, 12)  # Last 12 months
+                        language_stats[language]['commit_count'] += len(recent_commits)
+                        language_stats[language]['recent_activity'] = len(recent_commits)
+                        language_stats[language]['total_commits'] = len(commits)
                     
                     total_commits += len(commits)
                     
@@ -127,7 +134,8 @@ class AnalysisService:
                     language=language,
                     total_bytes=stats['total_bytes'],
                     commit_count=stats['commit_count'],
-                    repository_count=stats['repository_count']
+                    repository_count=stats['repository_count'],
+                    recent_activity=stats.get('recent_activity', 0)
                 )
                 
                 language_intensities.append(LanguageIntensity(
@@ -164,3 +172,27 @@ class AnalysisService:
             job.status = "failed"
             job.error_message = str(e)
             job.completed_at = datetime.now()
+    
+    def _filter_recent_commits(self, commits: List[Dict], months_back: int) -> List[Dict]:
+        """
+        Filter commits to only include those within the specified months back
+        """
+        if months_back <= 0:
+            return commits
+        
+        from datetime import datetime, timedelta
+        cutoff_date = datetime.now() - timedelta(days=months_back * 30)
+        
+        recent_commits = []
+        for commit in commits:
+            try:
+                commit_date = datetime.fromisoformat(
+                    commit['author']['date'].replace('Z', '+00:00')
+                )
+                if commit_date >= cutoff_date:
+                    recent_commits.append(commit)
+            except (KeyError, ValueError, TypeError):
+                # Skip commits with invalid date format
+                continue
+        
+        return recent_commits

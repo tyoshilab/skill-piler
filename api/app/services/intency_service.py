@@ -28,7 +28,7 @@ class IntencyService:
             "YAML": 0.3
         }
     
-    def calculate_language_intensity(self, language: str, total_bytes: int, commit_count: int, repository_count: int) -> float:
+    def calculate_language_intensity(self, language: str, total_bytes: int, commit_count: int, repository_count: int, recent_activity: int = None) -> float:
         """
         Calculate intensity score for a programming language
         Based on:
@@ -36,6 +36,7 @@ class IntencyService:
         - Commit frequency  
         - Repository count
         - Language complexity
+        - Recent activity (time-weighted)
         """
         if total_bytes == 0 or commit_count == 0:
             return 0.0
@@ -49,11 +50,19 @@ class IntencyService:
         repository_score = self._calculate_repository_score(repository_count)
         complexity_multiplier = self._get_language_complexity(language)
         
+        # Calculate recent activity boost if available
+        recency_boost = 1.0
+        if recent_activity is not None and recent_activity > 0 and commit_count > 0:
+            # Boost intensity based on recent activity ratio
+            activity_ratio = recent_activity / commit_count
+            recency_boost = 1.0 + (activity_ratio * 0.3)  # Up to 30% boost for recent activity
+        
         # Combine scores with weights
         base_intensity = (
-            volume_score * 0.4 +      # 40% weight on code volume
-            commit_score * 0.35 +     # 35% weight on commit activity  
-            repository_score * 0.25   # 25% weight on repository spread
+            volume_score * 0.35 +      # 35% weight on code volume
+            commit_score * 0.35 +      # 35% weight on commit activity  
+            repository_score * 0.20 +  # 20% weight on repository spread
+            (recency_boost - 1.0) * 10 # 10% boost for recent activity
         )
         
         # Apply language complexity multiplier
