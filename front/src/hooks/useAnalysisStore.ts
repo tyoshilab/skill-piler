@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { AnalysisRequest, AnalysisResult, AnalysisJob } from '../types/analysis';
+import { ApiService } from '../services/apiService';
 
 interface AnalysisStore {
   currentAnalysis: AnalysisResult | null;
@@ -10,6 +11,7 @@ interface AnalysisStore {
   startAnalysis: (request: AnalysisRequest) => Promise<void>;
   clearAnalysis: () => void;
   setError: (error: string | null) => void;
+  pollJobStatus: (jobId: string) => Promise<void>;
 }
 
 export const useAnalysisStore = create<AnalysisStore>((set, get) => ({
@@ -19,62 +21,76 @@ export const useAnalysisStore = create<AnalysisStore>((set, get) => ({
   error: null,
   
   startAnalysis: async (request: AnalysisRequest) => {
-    set({ isLoading: true, error: null });
+    set({ isLoading: true, error: null, currentAnalysis: null });
     
     try {
-      // TODO: Implement actual API call
-      // Mock data for now
-      setTimeout(() => {
-        const mockResult: AnalysisResult = {
-          username: request.github_username,
-          analysis_date: new Date().toISOString(),
-          total_repositories: 10,
-          total_commits: 150,
-          analysis_period_months: 12,
-          languages: [
-            {
-              language: 'JavaScript',
-              intensity: 0.8,
-              commit_count: 50,
-              line_count: 2000,
-              repository_count: 4
-            },
-            {
-              language: 'Python',
-              intensity: 0.6,
-              commit_count: 30,
-              line_count: 1500,
-              repository_count: 3
-            },
-            {
-              language: 'TypeScript',
-              intensity: 0.4,
-              commit_count: 20,
-              line_count: 800,
-              repository_count: 2
-            }
-          ]
-        };
-        
-        set({ 
-          currentAnalysis: mockResult,
-          isLoading: false 
-        });
-      }, 2000);
+      // Start the analysis job
+      const job = await ApiService.startAnalysis(request);
+      set({ currentJob: job });
+      
+      // Start polling for job completion
+      await get().pollJobStatus(job.job_id);
       
     } catch (error) {
+      console.error('Analysis start failed:', error);
       set({ 
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: error instanceof Error ? error.message : 'Failed to start analysis',
         isLoading: false 
       });
     }
+  },
+  
+  pollJobStatus: async (jobId: string) => {
+    const maxAttempts = 60; // Max 5 minutes (60 * 5 seconds)
+    let attempts = 0;
+    
+    const pollInterval = setInterval(async () => {
+      try {
+        attempts++;
+        
+        // Get job status
+        const job = await ApiService.getAnalysisStatus(jobId);
+        set({ currentJob: job });
+        
+        if (job.status === 'completed') {
+          // Get the result
+          const result = await ApiService.getAnalysisResult(jobId);
+          set({ 
+            currentAnalysis: result, 
+            isLoading: false 
+          });
+          clearInterval(pollInterval);
+        } else if (job.status === 'failed') {
+          set({ 
+            error: job.error_message || 'Analysis failed',
+            isLoading: false 
+          });
+          clearInterval(pollInterval);
+        } else if (attempts >= maxAttempts) {
+          set({ 
+            error: 'Analysis timeout - please try again',
+            isLoading: false 
+          });
+          clearInterval(pollInterval);
+        }
+        
+      } catch (error) {
+        console.error('Polling error:', error);
+        set({ 
+          error: error instanceof Error ? error.message : 'Failed to check analysis status',
+          isLoading: false 
+        });
+        clearInterval(pollInterval);
+      }
+    }, 5000); // Poll every 5 seconds
   },
   
   clearAnalysis: () => {
     set({ 
       currentAnalysis: null, 
       currentJob: null, 
-      error: null 
+      error: null,
+      isLoading: false
     });
   },
   
