@@ -1,0 +1,61 @@
+---
+
+volumes:
+  skill-piler-front-node-modules:
+  redis-data:
+
+services:
+  skill-piler-front:
+    build: 
+      context: ./front
+      dockerfile: Dockerfile
+    container_name: skill-piler-front
+    hostname: "skill-piler-front"
+    ports:
+      - "4000:3000"
+    volumes:
+      - ./front:/usr/src/app
+      - skill-piler-front-node-modules:/usr/src/app/node_modules
+    stdin_open: true
+    tty: true
+    environment:
+      - REACT_APP_API_URL=http://localhost:4001/api/v1
+  
+  skill-piler-db:
+    image: postgres:17.4-alpine3.21
+    container_name: skill-piler-db
+    environment:
+      POSTGRES_DB: skill-piler
+      POSTGRES_USER: skill-piler
+      POSTGRES_PASSWORD: skill-piler
+      LANG: ja_JP.UTF-8
+    volumes:
+      - ./db/sql:/docker-entrypoint-initdb.d
+    ports:
+      - 25432:5432
+
+  skill-piler-redis:
+    image: redis:7-alpine
+    container_name: skill-piler-redis
+    ports:
+      - "6379:6379"
+    command: redis-server --appendonly yes
+    volumes:
+      - redis-data:/data
+
+  skill-piler-api:
+    build: 
+      context: ./api
+      dockerfile: Dockerfile
+    container_name: skill-piler-api
+    hostname: "skill-piler-api"
+    ports:
+      - "4001:3001"
+    depends_on:
+      - skill-piler-db
+      - skill-piler-redis
+    volumes:
+      - ./api:/usr/src/app
+    environment:
+      - DATABASE_URL=postgresql://skill-piler:skill-piler@skill-piler-db:5432/skill-piler
+      - REDIS_URL=redis://skill-piler-redis:6379
