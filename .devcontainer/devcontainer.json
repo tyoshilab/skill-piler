@@ -1,0 +1,38 @@
+{
+  "name": "Skill Piler Development",
+  "dockerComposeFile": "../docker-compose.yml",
+  "service": "skill-piler-front",
+  "workspaceFolder": "/usr/src/app",
+  "shutdownAction": "stopCompose",
+  
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-vscode.vscode-typescript-next",
+        "bradlc.vscode-tailwindcss",
+        "esbenp.prettier-vscode",
+        "ms-vscode.vscode-eslint"
+      ],
+      "settings": {
+        "typescript.preferences.includePackageJsonAutoImports": "auto",
+        "typescript.suggest.autoImports": true,
+        "typescript.updateImportsOnFileMove.enabled": "always"
+      }
+    }
+  },
+  
+  "forwardPorts": [3000, 3001, 5432, 6379],
+  "portsAttributes": {
+    "3000": {
+      "label": "Frontend",
+      "onAutoForward": "notify"
+    },
+    "3001": {
+      "label": "API",
+      "onAutoForward": "notify"
+    }
+  },
+  
+  "postCreateCommand": "npm install",
+  "remoteUser": "node"
+}
