@@ -114,7 +114,7 @@ class AnalysisService:
                         
                         # Filter commits for time-weighted analysis
                         recent_commits = self._filter_recent_commits(commits, 12)  # Last 12 months
-                        language_stats[language]['commit_count'] += len(recent_commits)
+                        language_stats[language]['commit_count'] += len(commits)  # Use all commits for intensity
                         language_stats[language]['recent_activity'] = len(recent_commits)
                         language_stats[language]['total_commits'] = len(commits)
                     
