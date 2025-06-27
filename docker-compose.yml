@@ -59,3 +59,22 @@ services:
     environment:
       - DATABASE_URL=postgresql://skill-piler:skill-piler@skill-piler-db:5432/skill-piler
       - REDIS_URL=redis://skill-piler-redis:6379
+
+  skill-piler-e2e:
+    build: 
+      context: ./front
+      dockerfile: Dockerfile.e2e
+    container_name: skill-piler-e2e
+    hostname: "skill-piler-e2e"
+    depends_on:
+      - skill-piler-front
+      - skill-piler-api
+    environment:
+      - NODE_ENV=production
+      - PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+      - REACT_APP_URL=http://skill-piler-front:3000
+      - REACT_APP_API_URL=http://skill-piler-api:3001/api/v1
+    cap_add:
+      - SYS_ADMIN
+    profiles:
+      - test
