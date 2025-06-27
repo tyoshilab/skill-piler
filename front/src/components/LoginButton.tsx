@@ -2,7 +2,7 @@ import React from 'react';
 import { useAuthStore } from '../hooks/useAuthStore';
 
 const LoginButton: React.FC = () => {
-  const { isAuthenticated, username, login, logout } = useAuthStore();
+  const { is_authenticated, username, login, logout } = useAuthStore();
 
   const handleLogin = () => {
     // TODO: Implement GitHub OAuth login
@@ -14,7 +14,7 @@ const LoginButton: React.FC = () => {
     logout();
   };
 
-  if (isAuthenticated) {
+  if (is_authenticated) {
     return (
       <div>
         <span>Welcome, {username}!</span>
