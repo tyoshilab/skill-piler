@@ -6,9 +6,14 @@ import logging
 logger = logging.getLogger(__name__)
 router = APIRouter()
 
-# Dependency for analysis service
+# Singleton instance for analysis service
+_analysis_service_instance = None
+
 def get_analysis_service() -> AnalysisService:
-    return AnalysisService()
+    global _analysis_service_instance
+    if _analysis_service_instance is None:
+        _analysis_service_instance = AnalysisService()
+    return _analysis_service_instance
 
 @router.post("/analyze", response_model=AnalysisJob)
 async def start_analysis(
