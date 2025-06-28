@@ -1,3 +1,17 @@
+"""
+Analysis Router - GitHub Repository Analysis Endpoints
+
+Design Reference: CLAUDE.md - Backend Architecture
+Endpoints: /analyze (POST), /analyze/{job_id} (GET), /analyze/{job_id}/result (GET)
+
+Related Classes:
+- AnalysisService: Core analysis orchestration and job management
+- GitHubService: GitHub API communication for repository data
+- IntencyService: Custom skill intensity calculation algorithms
+- CacheService: Redis caching for GitHub API responses
+- Models: AnalysisRequest, AnalysisJob, AnalysisResult
+"""
+
 from fastapi import APIRouter, HTTPException, Depends
 from app.models.analysis import AnalysisRequest, AnalysisJob, AnalysisResult
 from app.services.analysis_service import AnalysisService

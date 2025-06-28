@@ -1,3 +1,17 @@
+"""
+Cache Service - Redis Caching for GitHub API Response Optimization
+
+Design Reference: CLAUDE.md - External Dependencies, Security Considerations
+Purpose: Reduces GitHub API rate limit usage through intelligent caching
+
+Related Classes:
+- GitHubService: Benefits from cached repository and commit data
+- AnalysisService: Uses cached analysis results for faster repeated requests
+
+Strategy: Time-based expiration, user-specific and repository-specific cache keys
+Benefits: Rate limit management, improved response times, reduced GitHub API calls
+"""
+
 import redis
 from typing import Any, Optional
 import json

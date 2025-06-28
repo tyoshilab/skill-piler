@@ -1,3 +1,17 @@
+"""
+Intency Service - Custom Programming Language Skill Intensity Calculation
+
+Design Reference: CLAUDE.md - Key Components, Custom "intensity" scores
+Purpose: Calculates skill level scores based on code volume, commits, complexity, and recency
+
+Related Classes:
+- AnalysisService: Consumes intensity calculations for final skill assessment
+- GitHubService: Provides raw data (bytes, commits, repositories) for calculations
+
+Algorithm: Logarithmic scaling for volume/commits + complexity multipliers + recency boost
+Weighting: 35% volume, 35% commits, 20% repository spread, 10% recent activity
+"""
+
 from typing import List, Dict
 import math
 import logging

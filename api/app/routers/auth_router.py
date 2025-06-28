@@ -1,3 +1,16 @@
+"""
+Authentication Router - GitHub OAuth Authentication Endpoints
+
+Design Reference: CLAUDE.md - Backend Architecture, Security Considerations
+Endpoints: /login (GET), /callback (POST), /status (GET)
+
+Related Classes:
+- AuthService: GitHub OAuth 2.0 flow implementation
+- GitHubService: Token validation and user info retrieval
+- Models: GitHubAuthRequest, GitHubAuthResponse, AuthStatus
+- Database: Encrypted token storage in PostgreSQL
+"""
+
 from fastapi import APIRouter, HTTPException
 from app.models.auth import GitHubAuthRequest, GitHubAuthResponse, AuthStatus
 from app.services.auth_service import AuthService

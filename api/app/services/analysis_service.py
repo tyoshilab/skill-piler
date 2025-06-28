@@ -1,3 +1,18 @@
+"""
+Analysis Service - Core GitHub Repository Analysis Orchestration
+
+Design Reference: CLAUDE.md - Backend Architecture, Key Components
+Purpose: Orchestrates multi-step analysis workflow for programming skill assessment
+
+Related Classes:
+- GitHubService: Repository and commit data retrieval via GitHub API
+- IntencyService: Custom intensity calculation based on commits, complexity, recency
+- CacheService: Redis caching for API response optimization
+- Models: AnalysisRequest, AnalysisJob, AnalysisResult, LanguageIntensity
+
+Workflow: User repos → Language analysis → Commit history → Intensity calculation → Result aggregation
+"""
+
 from app.models.analysis import AnalysisRequest, AnalysisJob, AnalysisResult, LanguageIntensity
 from app.services.github_service import GitHubService
 from app.services.intency_service import IntencyService

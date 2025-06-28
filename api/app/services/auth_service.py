@@ -1,3 +1,17 @@
+"""
+Authentication Service - GitHub OAuth 2.0 Flow Implementation
+
+Design Reference: CLAUDE.md - Security Considerations, External Dependencies
+Purpose: Handles GitHub OAuth authentication flow and token management
+
+Related Classes:
+- AuthRouter: Exposes OAuth endpoints (/login, /callback, /status)
+- GitHubService: Uses authenticated tokens for API calls
+- Database: Stores encrypted access tokens securely
+
+Security: Tokens encrypted in PostgreSQL, no frontend token exposure, secure redirect handling
+"""
+
 from app.models.auth import GitHubAuthRequest, GitHubAuthResponse, AuthStatus
 import httpx
 

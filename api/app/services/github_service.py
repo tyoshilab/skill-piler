@@ -1,3 +1,18 @@
+"""
+GitHub Service - GitHub API Communication and Data Retrieval
+
+Design Reference: CLAUDE.md - External Dependencies, Security Considerations
+Purpose: Handles all GitHub API interactions with proper authentication and rate limiting
+
+Related Classes:
+- AnalysisService: Consumes repository and commit data for analysis
+- AuthService: Provides access tokens for authenticated API calls
+- CacheService: Caches API responses to reduce rate limit usage
+
+API Usage: REST API v3 for repositories/commits, GraphQL planned for complex queries
+Security: Token-based authentication, no sensitive data exposure to frontend
+"""
+
 from typing import List, Dict, Optional
 import httpx
 import logging
