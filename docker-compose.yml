@@ -60,6 +60,36 @@ services:
       - DATABASE_URL=postgresql://skill-piler:skill-piler@skill-piler-db:5432/skill-piler
       - REDIS_URL=redis://skill-piler-redis:6379
 
+  skill-piler-api-test:
+    build: 
+      context: ./api
+      dockerfile: Dockerfile.test
+    container_name: skill-piler-api-test
+    hostname: "skill-piler-api-test"
+    depends_on:
+      - skill-piler-db
+      - skill-piler-redis
+    volumes:
+      - ./api:/usr/src/app
+    environment:
+      - DATABASE_URL=postgresql://skill-piler:skill-piler@skill-piler-db:5432/skill-piler
+      - REDIS_URL=redis://skill-piler-redis:6379
+    profiles:
+      - test
+
+  skill-piler-front-test:
+    build: 
+      context: ./front
+      dockerfile: Dockerfile.test
+    container_name: skill-piler-front-test
+    hostname: "skill-piler-front-test"
+    environment:
+      - NODE_ENV=test
+      - CI=true
+      - REACT_APP_API_URL=http://localhost:4001/api/v1
+    profiles:
+      - test
+
   skill-piler-e2e:
     build: 
       context: ./front
