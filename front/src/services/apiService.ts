@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { AnalysisRequest, AnalysisJob, AnalysisResult } from '../types/analysis';
+import { AnalysisRequest, AnalysisJob, AnalysisResult, TimeSeriesDataPoint } from '../types/analysis';
 import { GitHubAuthRequest, GitHubAuthResponse, AuthStatus } from '../types/auth';
 
 const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:4001/api/v1';
@@ -24,6 +24,18 @@ export class ApiService {
   static async getAnalysisResult(jobId: string): Promise<AnalysisResult> {
     const response = await apiClient.get<AnalysisResult>(`/analyze/${jobId}/result`);
     return response.data;
+  }
+
+  static async getTimeSeriesData(username: string, timePoint: number = 0): Promise<TimeSeriesDataPoint[]> {
+    const params = new URLSearchParams();
+    if (timePoint > 0) {
+      params.append('months', timePoint.toString());
+    }
+    
+    const response = await apiClient.get<{ time_series_data: TimeSeriesDataPoint[] }>(
+      `/analyze/timeseries/${username}?${params.toString()}`
+    );
+    return response.data.time_series_data;
   }
 
   // Auth endpoints

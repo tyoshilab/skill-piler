@@ -1,14 +1,17 @@
 import { create } from 'zustand';
-import { AnalysisRequest, AnalysisResult, AnalysisJob } from '../types/analysis';
+import { AnalysisRequest, AnalysisResult, AnalysisJob, TimeSeriesDataPoint } from '../types/analysis';
 import { ApiService } from '../services/apiService';
 
 interface AnalysisStore {
   currentAnalysis: AnalysisResult | null;
   currentJob: AnalysisJob | null;
+  timeSeriesData: TimeSeriesDataPoint[] | null;
   isLoading: boolean;
+  isLoadingTimeSeries: boolean;
   error: string | null;
   
   startAnalysis: (request: AnalysisRequest) => Promise<void>;
+  loadTimeSeriesData: (username: string, timePoint: number) => Promise<void>;
   clearAnalysis: () => void;
   setError: (error: string | null) => void;
   pollJobStatus: (jobId: string) => Promise<void>;
@@ -17,7 +20,9 @@ interface AnalysisStore {
 export const useAnalysisStore = create<AnalysisStore>((set, get) => ({
   currentAnalysis: null,
   currentJob: null,
+  timeSeriesData: null,
   isLoading: false,
+  isLoadingTimeSeries: false,
   error: null,
   
   startAnalysis: async (request: AnalysisRequest) => {
@@ -84,13 +89,33 @@ export const useAnalysisStore = create<AnalysisStore>((set, get) => ({
       }
     }, 5000); // Poll every 5 seconds
   },
+
+  loadTimeSeriesData: async (username: string, timePoint: number) => {
+    set({ isLoadingTimeSeries: true, error: null });
+    
+    try {
+      const timeSeriesData = await ApiService.getTimeSeriesData(username, timePoint);
+      set({ 
+        timeSeriesData,
+        isLoadingTimeSeries: false 
+      });
+    } catch (error) {
+      console.error('Time series data loading failed:', error);
+      set({ 
+        error: error instanceof Error ? error.message : 'Failed to load time series data',
+        isLoadingTimeSeries: false 
+      });
+    }
+  },
   
   clearAnalysis: () => {
     set({ 
       currentAnalysis: null, 
       currentJob: null, 
+      timeSeriesData: null,
       error: null,
-      isLoading: false
+      isLoading: false,
+      isLoadingTimeSeries: false
     });
   },
   
